@@ -7,6 +7,11 @@ import {
 } from "@quirrel/client";
 
 let baseUrl: string | undefined = undefined;
+let quirrelBaseUrl: string | undefined = undefined;
+
+if (process.env.QUIRREL_API_URL) {
+  quirrelBaseUrl = process.env.QUIRREL_API_URL;
+}
 
 if (process.env.VERCEL_URL) {
   baseUrl = `https://${process.env.VERCEL_URL}/api/`;
@@ -50,11 +55,14 @@ interface QueueResult<Payload> {
 export function Queue<Payload>(
   path: string,
   handler: (payload: Payload) => Promise<void>,
-  defaultJobOptions?: DefaultJobOptions
+  defaultJobOptions?: DefaultJobOptions & {
+    baseUrl?: string;
+  }
 ): QueueResult<Payload> {
   const endpoint = baseUrl + path;
 
   const quirrel = new QuirrelClient({
+    baseUrl: defaultJobOptions?.baseUrl ?? quirrelBaseUrl,
     encryptionSecret,
     defaultJobOptions,
   });
